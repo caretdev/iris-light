@@ -12,7 +12,10 @@ if [ -z "$3" ]; then
 else
   suffix=${3}
 fi
-version=$(docker image inspect --format '{{index .Config.Labels "com.intersystems.platform-version"}}' $base | cut -d'.' -f1-2)
+# version=$(docker image inspect --format '{{index .Config.Labels "com.intersystems.platform-version"}}' $base | cut -d'.' -f1-2)
+version=2025.3
+[[ $tag == 'latest-em' ]] && version='2025.1'
+[[ $tag == 'latest-cd' ]] && version='2025.2'
 
 targets="--tag $target:$tag-$suffix "
 targets+="--tag $target:$version-$suffix"
@@ -22,3 +25,11 @@ originalbase+=:$(docker history $base --format '{{.CreatedBy}}'  --no-trunc | gr
 
 labels=$(docker image inspect --format '{{range $k, $v := .Config.Labels}}--label {{$k}}="{{$v}}" {{end}}' $base)
 eval "docker build ${labels} $targets --build-arg BASE_IMAGE=$base --build-arg ORIGINAL_BASE=$originalbase ."
+
+export IMAGES=($target:$tag-$suffix $target:$version-$suffix)
+export TAGS=($tag-$suffix $version-$suffix)
+echo "Built images:"
+echo 'ID Image Size' | awk -F' ' '{printf "%-12s %-70s %-10s\n", $1,$2,$3}'
+for img in "${IMAGES[@]}"; do
+  docker images $img --format '{{.ID}} {{.Repository}}:{{.Tag}} {{.Size}}' | awk -F' ' '{printf "%-12s %-70s %-10s\n", $1,$2,$3}'
+done

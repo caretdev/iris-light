@@ -10,18 +10,53 @@ on:
 env:
   IMAGE_REPO: containers.intersystems.com/intersystems
   IMAGE_NAME: iris-community
+  TARGET_IMAGE: caretdev/iris-community-light
+  TAG: |
+    latest-em
+    latest-cd
+    latest-preview
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      images: ${{ steps.collect.outputs.images }}
+      do_build: ${{ steps.collect.outputs.do_build }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - uses: actions/cache/restore@v4
+        with:
+          path: manifests.txt
+          key: manifests
+      - name: collect manifests
+        id: collect
+        run: |
+          TAG="${{ env.TAG }}"
+          for tag in ${TAG[@]}; do
+            image="${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:${tag}"
+            docker manifest inspect $image | jq ".manifests[] | ( .platform.architecture + \" $tag\" + \" \" + .digest )" -r
+          done > latest_manifests.txt
+          images=$(while IFS= read -r line; do
+            if ! grep "$line" manifests.txt >/dev/null 2>&1; then
+              echo $line | awk -F' ' '{printf "{\"platform\": \"%s\", \"tag\": \"%s\"}\n", $1,$2}'
+            fi
+          done < "latest_manifests.txt" | sed 's/amd64/ubuntu-24.04/g;s/arm64/ubuntu-24.04-arm/g' | jq -cs '.')
+          mv latest_manifests.txt manifests.txt
+          echo $images | jq
+          echo images="$images" >> $GITHUB_OUTPUT
+          ([[ "$images" != "[]" ]] && echo do_build=true || echo do_build=false ) >> $GITHUB_OUTPUT
+      - name: Upload file
+        uses: actions/upload-artifact@v4
+        with:
+          name: manifests
+          path: manifests.txt
   build:
+    needs: prepare
+    if: ${{ needs.prepare.outputs.do_build != 'false' }}
     strategy:
       fail-fast: false
       matrix:
-        tag:
-          - latest-em
-          - latest-cd
-          - latest-preview
-        platform:
-          - ubuntu-24.04
-          - ubuntu-24.04-arm
+        include: ${{ fromJson(needs.prepare.outputs.images) }}
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout repository
@@ -34,21 +69,63 @@ jobs:
           version=$(docker image inspect ${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:${{ matrix.tag }} --format '{{index .Config.Labels "com.intersystems.platform-version"}}' | cut -d'.' -f1-2)
           hash=$(docker images ${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:${{ matrix.tag }} --no-trunc -q)
           echo "Platform version: $version"
-          echo "Image hash: $hash"
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build IRIS Light image
-        run: ./make.sh ${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:${{ matrix.tag }} caretdev/${{ env.IMAGE_NAME }}
-
-  merge_platform_containers:
-    name: Merge Platform Containers
+        id: image
+        run: |
+          source ./make.sh "${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:${{ matrix.tag }}" "${{ env.TARGET_IMAGE }}"
+          for img in "${IMAGES[@]}"; do
+            echo "::notice ::Built image: $img"
+            docker push $img
+          done
+          for tag in "${TAGS[@]}"; do echo $tag >> ${{ github.run_id }}_${{ matrix.tag }}_${{ matrix.platform }}_images.txt; done
+          echo images="${IMAGES[@]}" >> $GITHUB_OUTPUT
+          echo tags="${TAGS[@]}" >> $GITHUB_OUTPUT
+      - name: Upload file
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.run_id }}_${{ matrix.tag }}_${{ matrix.platform }}
+          path: ${{ github.run_id }}_${{ matrix.tag }}_${{ matrix.platform }}_*.txt
+  metadata:
     runs-on: ubuntu-latest
     needs: build
+    steps:
+      - name: Download artifacts of matrix jobs
+        uses: actions/download-artifact@v4
+        with:
+          path: ./
+          merge-multiple: true
+      - name: Images
+        id: images
+        run: |
+          echo tags=`cat ${{ github.run_id }}_*_images.txt | sed 's/-amd64//g;s/-arm64//g' | sort | uniq | jq -Rsc 'split("\n") | map(select(length > 0))'` >> $GITHUB_OUTPUT
+      - uses: actions/cache/save@v4
+        with:
+          path: manifests.txt
+          key: manifests
+    outputs:
+      tags: ${{ steps.images.outputs.tags }}
+
+  merge:
+    runs-on: ubuntu-latest
+    needs: metadata
     strategy:
       fail-fast: false
       matrix:
-        tag:
-          - latest-em
-          - latest-cd
-          - latest-preview
+        tag: ${{ fromJson(needs.metadata.outputs.tags) }}
     steps:
-      - name: Merge
-        run: echo demo
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Images
+        run: |
+          docker manifest create ${{ env.TARGET_IMAGE }}:${{ matrix.tag }} \
+                                 ${{ env.TARGET_IMAGE }}:${{ matrix.tag }}-amd64 \
+                                 ${{ env.TARGET_IMAGE }}:${{ matrix.tag }}-arm64
+          docker manifest push ${{ env.TARGET_IMAGE }}:${{ matrix.tag }}

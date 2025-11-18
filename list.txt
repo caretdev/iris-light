@@ -1,0 +1,12 @@
+caretdev/iris-community:latest-cd-arm64
+caretdev/iris-community:2025.2-arm64
+caretdev/iris-community:latest-cd-amd64
+caretdev/iris-community:2025.2-amd64
+caretdev/iris-community:latest-em-arm64
+caretdev/iris-community:2025.1-arm64
+caretdev/iris-community:latest-em-amd64
+caretdev/iris-community:2025.1-amd64
+caretdev/iris-community:latest-preview-arm64
+caretdev/iris-community:2025.3-arm64
+caretdev/iris-community:latest-preview-amd64
+caretdev/iris-community:2025.3-amd64
