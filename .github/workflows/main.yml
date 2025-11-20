@@ -6,6 +6,9 @@ on:
   repository_dispatch:
     types: [test workflow]
   workflow_dispatch:
+  schedule:
+    # Runs "At 04:15." (see https://crontab.guru)
+    - cron: '15 4 * * *'
 
 env:
   IMAGE_REPO: containers.intersystems.com/intersystems
@@ -77,7 +80,8 @@ jobs:
       - name: Build IRIS Light image
         id: image
         run: |
-          source ./make.sh "${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:${{ matrix.tag }}" "${{ env.TARGET_IMAGE }}"
+          suffix=$(uname -m | sed 's/aarch64/arm64/' | sed 's/x86_64/amd64/')
+          source ./make.sh "${{ env.IMAGE_REPO }}/${{ env.IMAGE_NAME }}:${{ matrix.tag }}" "${{ env.TARGET_IMAGE }}" $suffix
           for img in "${IMAGES[@]}"; do
             echo "::notice ::Built image: $img"
             docker push $img
