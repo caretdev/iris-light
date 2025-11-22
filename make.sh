@@ -23,7 +23,7 @@ labels=$(docker image inspect --format '{{range $k, $v := .Config.Labels}}--labe
 eval "docker build ${labels} $targets --build-arg BASE_IMAGE=$base --build-arg ORIGINAL_BASE=$originalbase ."
 
 export IMAGES=($target:$tag$suffix $target:$version$suffix)
-export TAGS=($tag-$suffix $version$suffix)
+export TAGS=($tag$suffix $version$suffix)
 echo "Built images:"
 echo 'ID Image Size' | awk -F' ' '{printf "%-12s %-70s %-10s\n", $1,$2,$3}'
 for img in "${IMAGES[@]}"; do
