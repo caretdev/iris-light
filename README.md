@@ -1,9 +1,16 @@
 # IRIS Light
 
-**IRIS Light** is a lightweight, minimal InterSystems IRIS® container image designed for use cases where IRIS is required primarily as a **high-performance SQL database engine**—without the extra components that add overhead, increase image size, and are unnecessary for many modern deployments.
+> **Important:** IRIS Light is an independent **third-party project** and is **not developed, endorsed, or supported** by InterSystems.
+> This project provides tooling that helps automate the manual process of disabling components within the official InterSystems IRIS® image.
+> **Users are responsible for ensuring compliance with the InterSystems IRIS license agreement and any redistribution restrictions.**
+> IRIS Light is provided *as-is*, without any warranties or supportability guarantees from InterSystems.
 
-IRIS Light starts from the official vanilla InterSystems IRIS Docker image and removes everything that is not required for core SQL functionality.
-The result is a **significantly smaller, faster-to-deploy, minimal IRIS image** perfect for:
+---
+
+**IRIS Light** is a lightweight, minimal InterSystems IRIS® container image designed for scenarios where IRIS is used primarily as a **high-performance SQL database engine**, without additional platform components that may add size or overhead.
+
+IRIS Light starts from the official vanilla InterSystems IRIS Docker image and **programmatically disables and removes optional functionality** that is not required for core SQL operations.
+The result is a **significantly smaller, faster-to-deploy, minimal IRIS image**, ideal for:
 
 * Microservices
 * CI/CD pipelines
@@ -12,13 +19,12 @@ The result is a **significantly smaller, faster-to-deploy, minimal IRIS image** 
 * Python / SQL / AI / ML pipelines
 * Projects relying on `SQLAlchemy-IRIS`, JDBC, ODBC, or direct SQL access
 
-IRIS Light is dramatically smaller than the original:
+**Image size comparison:**
 
-| Image Type                    | Approx Size |
-| ----------------------------- | ----------- |
-| **Vanilla IRIS**              | ~3.5 GB     |
-| **IRIS Light**                | ~580 MB     |
-
+| Image Type     | Approx Size |
+| -------------- | ----------- |
+| Vanilla IRIS   | ~3.5 GB     |
+| **IRIS Light** | ~580 MB     |
 
 ---
 
