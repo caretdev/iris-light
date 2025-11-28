@@ -29,9 +29,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
       - uses: actions/cache/restore@v4
+        id: restore-cache
         with:
           path: manifests.txt
           key: manifests
+          restore-keys: |
+            manifests-
       - name: collect manifests
         id: collect
         run: |
@@ -59,8 +62,8 @@ jobs:
           path: manifests.txt
       - uses: actions/cache/save@v4
         with:
+          key: manifests-${{ github.run_id }}
           path: manifests.txt
-          key: manifests
   build:
     needs: prepare
     if: ${{ needs.prepare.outputs.do_build != 'false' }}
