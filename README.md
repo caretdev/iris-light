@@ -1,15 +1,15 @@
-# IRIS Light
+# IRIS Image Reducer
 
-> **Important:** IRIS Light is an independent **third-party project** and is **not developed, endorsed, or supported** by InterSystems.
+> **Important:** IRIS Image Reducer is an independent **third-party project** and is **not developed, endorsed, or supported** by InterSystems.
 > This project provides tooling that helps automate the manual process of disabling components within the official InterSystems IRIS® image.
 > **Users are responsible for ensuring compliance with the InterSystems IRIS license agreement and any redistribution restrictions.**
-> IRIS Light is provided *as-is*, without any warranties or supportability guarantees from InterSystems.
+> IRIS Image Reducer is provided *as-is*, without any warranties or supportability guarantees from InterSystems.
 
 ---
 
-**IRIS Light** is a lightweight, minimal InterSystems IRIS® container image designed for scenarios where IRIS is used primarily as a **high-performance SQL database engine**, without additional platform components that may add size or overhead.
+**IRIS Image Reducer** is a lightweight, minimal InterSystems IRIS® container image designed for scenarios where IRIS is used primarily as a **high-performance SQL database engine**, without additional platform components that may add size or overhead.
 
-IRIS Light starts from the official vanilla InterSystems IRIS Docker image and **programmatically disables and removes optional functionality** that is not required for core SQL operations.
+IRIS Image Reducer starts from the official vanilla InterSystems IRIS Docker image and **programmatically disables and removes optional functionality** that is not required for core SQL operations.
 The result is a **significantly smaller, faster-to-deploy, minimal IRIS image**, ideal for:
 
 * Microservices
@@ -21,10 +21,10 @@ The result is a **significantly smaller, faster-to-deploy, minimal IRIS image**,
 
 **Image size comparison:**
 
-| Image Type     | Approx Size |
-| -------------- | ----------- |
-| Vanilla IRIS   | ~3.5 GB     |
-| **IRIS Light** | ~580 MB     |
+| Image Type        | Approx Size |
+| ----------------- | ----------- |
+| Vanilla IRIS      | ~3.5 GB     |
+| **Reduced image** | ~580 MB     |
 
 ---
 
@@ -49,7 +49,7 @@ The result is a **significantly smaller, faster-to-deploy, minimal IRIS image**,
 
 ## 🗂️ What’s Removed
 
-IRIS Light strips out components that are often unused in minimal deployments, including:
+IRIS Image Reducer strips out components that are often unused in minimal deployments, including:
 
 * **Interoperability / Ensemble** components
   (Production engine, Business Services, Adapters, etc.)
@@ -74,7 +74,7 @@ This ensures the resulting container includes only what is needed to run IRIS as
 
 ## 🟢 What’s Kept
 
-IRIS Light preserves only the essential pieces:
+IRIS Image Reducer preserves only the essential pieces:
 
 * Core IRIS database engine
 * SQL engine & query processor
@@ -125,9 +125,9 @@ engine = create_engine("iris://_system:SYS@localhost:1972/USER")
 
 ---
 
-## 🏗️ Building Your Own IRIS Light Image
+## 🏗️ Building Your Own IRIS Image Reducer Image
 
-IRIS Light can be generated from **any official InterSystems IRIS base image**, including:
+IRIS Image Reducer can be generated from **any official InterSystems IRIS base image**, including:
 
 * **Enterprise IRIS** (`containers.intersystems.com/intersystems/iris:...`)
 * **Community Edition** (`containers.intersystems.com/intersystems/iris-community:...`)
@@ -142,7 +142,7 @@ The project includes a convenient build script `make.sh` that takes:
 
 ## 🛠️ How It Works
 
-IRIS Light uses the official InterSystems IRIS image as the base and applies a reduction script that:
+IRIS Image Reducer uses the official InterSystems IRIS image as the base and applies a reduction script that:
 
 1. Identifies removable components (web, interoperability, DeepSee, others).
 2. Deletes binaries, libraries, classes, and system modules not required for SQL.
@@ -155,7 +155,7 @@ The project does **not** modify the IRIS kernel or SQL subsystem, ensuring compa
 
 ## 🧪 Testing & Validation
 
-IRIS Light has been verified with:
+IRIS Image Reducer has been verified with:
 
 * **SQLAlchemy-IRIS**
 * Basic SQL workloads
@@ -163,7 +163,7 @@ IRIS Light has been verified with:
 * Containerized development environments
 * Automated CI pipelines
 
-You can extend the included test scripts or integrate IRIS Light into your own tooling.
+You can extend the included test scripts or integrate IRIS Image Reducer into your own tooling.
 
 ---
 
