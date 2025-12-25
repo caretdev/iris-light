@@ -6,6 +6,12 @@ on:
   repository_dispatch:
     types: [test workflow]
   workflow_dispatch:
+    inputs:
+      ignore_cache:
+        description: 'Ignore cache when collecting manifests'
+        required: false
+        default: true
+        type: boolean
   schedule:
     # Runs "At 04:15." (see https://crontab.guru)
     - cron: '15 4 * * *'
@@ -29,6 +35,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
       - uses: actions/cache/restore@v4
+        if: ${{ github.event.inputs.ignore_cache != 'true' }}
         id: restore-cache
         with:
           path: manifests.txt
