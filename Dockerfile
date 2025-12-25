@@ -97,13 +97,14 @@ RUN <<EOT
   rm -rf ${ISC_PACKAGE_INSTALLDIR}/mgr/ensinstall.log
   rm -rf ${ISC_PACKAGE_INSTALLDIR}/mgr/SystemMonitor.log
   rm -rf ${ISC_PACKAGE_INSTALLDIR}/mgr/python/*
-  rm -rf ${ISC_PACKAGE_INSTALLDIR}/mgr/iristemp/*
   rm -rf ${ISC_PACKAGE_INSTALLDIR}/mgr/IRIS.WIJ
   rm -rf ${ISC_PACKAGE_INSTALLDIR}/mgr/*.isc
   rm -rf ${ISC_PACKAGE_INSTALLDIR}/mgr/startup.last
   rm -rf ${ISC_PACKAGE_INSTALLDIR}/mgr/messages.log*
   touch ${ISC_PACKAGE_INSTALLDIR}/mgr/messages.log
   find ${ISC_PACKAGE_INSTALLDIR} -iname IRIS.DAT -exec ls -lah {} \;
+  mkdir -p /usr/irissys/csp/broker/covers/
+  mkdir -p /usr/irissys/csp/broker/deepsee/
   (cd ${IRISSYS} && for f in * ; do ([ -f ${ISC_PACKAGE_INSTALLDIR}/bin/$f ] && (rm -f $f && ln -s ${ISC_PACKAGE_INSTALLDIR}/bin/$f $f ) ) ; done)
   du -hd2 ${ISC_PACKAGE_INSTALLDIR}
 EOT
